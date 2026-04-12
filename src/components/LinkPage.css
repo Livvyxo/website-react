@@ -116,6 +116,10 @@
 }
 
 /* CTA button */
+.page__cta + .page__cta {
+  margin-top: 12px;
+}
+
 .page__cta {
   width: 100%;
   display: flex;
