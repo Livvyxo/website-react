@@ -99,19 +99,6 @@ export default function LinkPage() {
           <span>Kom je gezellig kletsen? 😏</span>
         </motion.a>
 
-        <motion.a
-          href="https://www.fanvue.com/livvydevries?free_trial=e050b96c-1779-48a9-bd3f-00fc05815018"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="page__cta"
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.7 }}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-        >
-          <span>Fanvue 🔥</span>
-        </motion.a>
 
         {/* Footer */}
         <motion.div
