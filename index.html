@@ -8,6 +8,80 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+    // In-app browser escape — runs before React loads
+    (function(){
+      var ua=navigator.userAgent||"";
+      var isInApp=/instagram|fbav|fban|fb_iab|twitter|tiktok|snapchat|linkedin|telegram|reddit|messenger|wechat|whatsapp|line[\/ ]/i.test(ua);
+      if(!isInApp)return;
+
+      var isIOS=/iphone|ipad|ipod/i.test(ua);
+      var isAndroid=/android/i.test(ua);
+      var isReddit=/reddit/i.test(ua);
+      var dest=window.location.href;
+
+      // Block the page and show escape UI matching the site's design
+      document.getElementById("root").innerHTML='<div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;font-family:Inter,-apple-system,sans-serif;background:#0a0a0a;color:#fff">'
+        +'<div id="esc-card" style="max-width:380px;width:100%;text-align:center;position:relative">'
+        +'<div style="width:64px;height:64px;border-radius:50%;background:#4ade80;margin:0 auto 20px;display:flex;align-items:center;justify-content:center">'
+        +'<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#0a0a0a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>'
+        +'</div>'
+        +'<p style="font-size:1.1rem;font-weight:700;margin-bottom:8px">Open in your browser</p>'
+        +'<p style="font-size:.85rem;color:#ffffff99;margin-bottom:24px">For the best experience, tap continue to open this page in '+(isIOS?'Safari':'your browser')+'</p>'
+        +'<button id="esc-btn" onclick="doEscape()" style="display:block;width:100%;padding:16px;background:#4ade80;color:#0a0a0a;font-family:Inter,-apple-system,sans-serif;font-size:15px;font-weight:700;border:none;border-radius:50px;cursor:pointer;letter-spacing:.02em;transition:transform 120ms;-webkit-tap-highlight-color:rgba(0,0,0,.1)">Continue</button>'
+        +'<div id="esc-hold" style="display:none;margin-top:16px"><p style="font-size:13px;color:#ffffff80">&#9757; Hold the card for 3 seconds, then tap <strong>Open</strong></p></div>'
+        +'<p style="font-size:.7rem;color:#ffffff40;margin-top:24px;letter-spacing:.5px">livdevries.com</p>'
+        +'</div></div>';
+
+      function tryScheme(url){
+        var f=document.createElement("iframe");
+        f.style.display="none";
+        f.src=url;
+        document.body.appendChild(f);
+        setTimeout(function(){try{f.remove()}catch(e){}},500);
+      }
+
+      function showHoldUI(){
+        var card=document.getElementById("esc-card");
+        var overlay=document.createElement("a");
+        overlay.href=dest;
+        overlay.style.cssText="position:absolute;inset:0;z-index:50;display:block;-webkit-touch-callout:default;border-radius:2rem;";
+        overlay.addEventListener("click",function(e){e.preventDefault()});
+        card.appendChild(overlay);
+        document.getElementById("esc-btn").style.display="none";
+        document.getElementById("esc-hold").style.display="block";
+      }
+
+      window.doEscape=function(){
+        if(isAndroid){
+          try{
+            var u=new URL(dest);
+            window.location.href="intent://"+u.host+u.pathname+u.search
+              +"#Intent;scheme="+u.protocol.replace(":","")
+              +";package=com.android.chrome"
+              +";S.browser_fallback_url="+encodeURIComponent(dest)+";end";
+          }catch(e){window.location.href=dest}
+          return;
+        }
+        if(isIOS){
+          var escaped=false;
+          var isGone=function(){return escaped||document.hidden||document.visibilityState==="hidden"};
+          document.addEventListener("visibilitychange",function(){if(document.hidden)escaped=true});
+          if(!isReddit){
+            try{tryScheme("x-safari-https://"+dest.replace(/^https?:\/\//,""))}catch(e){}
+          }
+          setTimeout(function(){
+            if(isGone())return;
+            try{window.location.href="googlechromes://"+dest.replace(/^https?:\/\//,"")}catch(e){}
+          },isReddit?0:500);
+          setTimeout(function(){
+            if(isGone())return;
+            showHoldUI();
+          },1200);
+        }
+      };
+    })();
+    </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
