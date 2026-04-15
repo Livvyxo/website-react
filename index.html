@@ -94,11 +94,16 @@
                 +";S.browser_fallback_url="+encodeURIComponent(dest)+";end";
             }catch(e2){}
           },500);
-          // If nothing worked after 1.5s, show copy fallback
+          // If intents blocked (e.g. TikTok DMs): show long-press overlay, then copy fallback
           setTimeout(function(){
             if(document.hidden)return;
+            showHoldUI();
+          },1200);
+          setTimeout(function(){
+            if(document.hidden)return;
+            document.getElementById("esc-hold").style.display="none";
             showCopyFallback();
-          },1500);
+          },5000);
           return;
         }
         if(isIOS){
