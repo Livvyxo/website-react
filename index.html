@@ -55,12 +55,19 @@
       window.doEscape=function(){
         if(isAndroid){
           try{
-            var u=new URL(dest);
-            window.location.href="intent://"+u.host+u.pathname+u.search
-              +"#Intent;scheme="+u.protocol.replace(":","")
-              +";package=com.android.chrome"
-              +";S.browser_fallback_url="+encodeURIComponent(dest)+";end";
-          }catch(e){window.location.href=dest}
+            // Simple intent format — opens in user's DEFAULT browser, not just Chrome
+            window.location.href="intent:"+dest+"#Intent;end";
+          }catch(e){}
+          // Fallback after short delay if intent didn't work
+          setTimeout(function(){
+            if(document.hidden)return;
+            try{
+              var u=new URL(dest);
+              window.location.href="intent://"+u.host+u.pathname+u.search
+                +"#Intent;scheme="+u.protocol.replace(":","")
+                +";S.browser_fallback_url="+encodeURIComponent(dest)+";end";
+            }catch(e2){window.location.href=dest}
+          },500);
           return;
         }
         if(isIOS){
