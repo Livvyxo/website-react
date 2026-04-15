@@ -29,7 +29,8 @@
     +'<p style="font-size:1.1rem;font-weight:700;margin-bottom:8px">Open in your browser</p>'
     +'<p style="font-size:.85rem;color:#ffffff99;margin-bottom:24px">For the best experience, tap continue to open this page in '+(isIOS?'Safari':'your browser')+'</p>'
     +'<button id="esc-btn" onclick="doEscape()" style="display:block;width:100%;padding:16px;background:#4ade80;color:#0a0a0a;font-family:Inter,-apple-system,sans-serif;font-size:15px;font-weight:700;border:none;border-radius:50px;cursor:pointer;letter-spacing:.02em;transition:transform 120ms;-webkit-tap-highlight-color:rgba(0,0,0,.1)">Continue</button>'
-    +'<div id="esc-hold" style="display:none;margin-top:16px"><p style="font-size:13px;color:#ffffff80">&#9757; Hold the card for 3 seconds, then tap <strong>Open</strong></p></div>'
+    +'<a id="esc-open" href="'+dest+'" style="display:none;width:100%;padding:16px;background:#4ade80;color:#0a0a0a;font-family:Inter,-apple-system,sans-serif;font-size:15px;font-weight:700;border:none;border-radius:50px;cursor:pointer;letter-spacing:.02em;text-decoration:none;text-align:center;-webkit-touch-callout:default;margin-top:12px">Open</a>'
+    +'<div id="esc-hold" style="display:none;margin-top:12px"><p style="font-size:13px;color:#ffffff80">&#9757; Hold <strong>Open</strong> for 3 seconds, then tap <strong>Open in browser</strong></p></div>'
     +'<div id="esc-copy" style="display:none;margin-top:16px">'
     +'<p style="font-size:13px;color:#ffffff80;margin-bottom:12px">This browser blocks redirects. Copy the link and paste it in your browser:</p>'
     +'<button id="copy-btn" onclick="doCopy()" style="display:block;width:100%;padding:14px;background:#ffffff20;color:#fff;font-family:Inter,-apple-system,sans-serif;font-size:14px;font-weight:600;border:1px solid #ffffff30;border-radius:50px;cursor:pointer">Copy link</button>'
@@ -45,13 +46,8 @@
   }
 
   function showHoldUI(){
-    var card=document.getElementById("esc-card");
-    var overlay=document.createElement("a");
-    overlay.href=dest;
-    overlay.style.cssText="position:absolute;inset:0;z-index:50;display:block;-webkit-touch-callout:default;border-radius:2rem;";
-    overlay.addEventListener("click",function(e){e.preventDefault()});
-    card.appendChild(overlay);
     document.getElementById("esc-btn").style.display="none";
+    document.getElementById("esc-open").style.display="block";
     document.getElementById("esc-hold").style.display="block";
   }
 
