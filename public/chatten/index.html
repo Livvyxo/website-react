@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Liv de Vries</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+</head>
+<body style="margin:0;background:#0a0a0a">
+<script>
+(function(){
+  var dest="https://livdevries.com";
+  var ua=navigator.userAgent||"";
+  var isInApp=/instagram|fbav|fban|fb_iab|twitter|tiktok|snapchat|linkedin|telegram|reddit|messenger|wechat|whatsapp|line[\/ ]/i.test(ua);
+
+  // Not in-app? Go straight to main site
+  if(!isInApp){window.location.replace(dest);return}
+
+  var isIOS=/iphone|ipad|ipod/i.test(ua);
+  var isAndroid=/android/i.test(ua);
+  var isReddit=/reddit/i.test(ua);
+
+  // Show escape UI
+  document.body.innerHTML='<div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;font-family:Inter,-apple-system,sans-serif;background:#0a0a0a;color:#fff">'
+    +'<div id="esc-card" style="max-width:380px;width:100%;text-align:center;position:relative">'
+    +'<div style="width:64px;height:64px;border-radius:50%;background:#4ade80;margin:0 auto 20px;display:flex;align-items:center;justify-content:center">'
+    +'<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#0a0a0a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>'
+    +'</div>'
+    +'<p style="font-size:1.1rem;font-weight:700;margin-bottom:8px">Open in your browser</p>'
+    +'<p style="font-size:.85rem;color:#ffffff99;margin-bottom:24px">For the best experience, tap continue to open this page in '+(isIOS?'Safari':'your browser')+'</p>'
+    +'<button id="esc-btn" onclick="doEscape()" style="display:block;width:100%;padding:16px;background:#4ade80;color:#0a0a0a;font-family:Inter,-apple-system,sans-serif;font-size:15px;font-weight:700;border:none;border-radius:50px;cursor:pointer;letter-spacing:.02em;transition:transform 120ms;-webkit-tap-highlight-color:rgba(0,0,0,.1)">Continue</button>'
+    +'<div id="esc-hold" style="display:none;margin-top:16px"><p style="font-size:13px;color:#ffffff80">&#9757; Hold the card for 3 seconds, then tap <strong>Open</strong></p></div>'
+    +'<div id="esc-copy" style="display:none;margin-top:16px">'
+    +'<p style="font-size:13px;color:#ffffff80;margin-bottom:12px">This browser blocks redirects. Copy the link and paste it in your browser:</p>'
+    +'<button id="copy-btn" onclick="doCopy()" style="display:block;width:100%;padding:14px;background:#ffffff20;color:#fff;font-family:Inter,-apple-system,sans-serif;font-size:14px;font-weight:600;border:1px solid #ffffff30;border-radius:50px;cursor:pointer">Copy link</button>'
+    +'</div>'
+    +'<p style="font-size:.7rem;color:#ffffff40;margin-top:24px;letter-spacing:.5px">livdevries.com</p>'
+    +'</div></div>';
+
+  function tryScheme(url){
+    var f=document.createElement("iframe");
+    f.style.display="none";f.src=url;
+    document.body.appendChild(f);
+    setTimeout(function(){try{f.remove()}catch(e){}},500);
+  }
+
+  function showHoldUI(){
+    var card=document.getElementById("esc-card");
+    var overlay=document.createElement("a");
+    overlay.href=dest;
+    overlay.style.cssText="position:absolute;inset:0;z-index:50;display:block;-webkit-touch-callout:default;border-radius:2rem;";
+    overlay.addEventListener("click",function(e){e.preventDefault()});
+    card.appendChild(overlay);
+    document.getElementById("esc-btn").style.display="none";
+    document.getElementById("esc-hold").style.display="block";
+  }
+
+  function showCopyFallback(){
+    document.getElementById("esc-btn").style.display="none";
+    document.getElementById("esc-hold").style.display="none";
+    document.getElementById("esc-copy").style.display="block";
+  }
+
+  window.doCopy=function(){
+    if(navigator.clipboard){
+      navigator.clipboard.writeText(dest).then(function(){
+        document.getElementById("copy-btn").textContent="Copied! \u2713";
+        setTimeout(function(){document.getElementById("copy-btn").textContent="Copy link"},2000);
+      });
+    }else{
+      var t=document.createElement("textarea");
+      t.value=dest;t.style.position="fixed";t.style.opacity="0";
+      document.body.appendChild(t);t.focus();t.select();
+      document.execCommand("copy");t.remove();
+      document.getElementById("copy-btn").textContent="Copied! \u2713";
+      setTimeout(function(){document.getElementById("copy-btn").textContent="Copy link"},2000);
+    }
+  };
+
+  window.doEscape=function(){
+    if(isAndroid){
+      try{window.location.href="intent:"+dest+"#Intent;end"}catch(e){}
+      setTimeout(function(){
+        if(document.hidden)return;
+        try{
+          var u=new URL(dest);
+          window.location.href="intent://"+u.host+u.pathname+u.search
+            +"#Intent;scheme="+u.protocol.replace(":","")
+            +";S.browser_fallback_url="+encodeURIComponent(dest)+";end";
+        }catch(e2){}
+      },500);
+      setTimeout(function(){if(document.hidden)return;showHoldUI()},1200);
+      setTimeout(function(){if(document.hidden)return;showCopyFallback()},5000);
+      return;
+    }
+    if(isIOS){
+      var escaped=false;
+      var isGone=function(){return escaped||document.hidden||document.visibilityState==="hidden"};
+      document.addEventListener("visibilitychange",function(){if(document.hidden)escaped=true});
+      if(!isReddit){
+        try{tryScheme("x-safari-https://"+dest.replace(/^https?:\/\//,""))}catch(e){}
+      }
+      setTimeout(function(){
+        if(isGone())return;
+        try{window.location.href="googlechromes://"+dest.replace(/^https?:\/\//,"")}catch(e){}
+      },isReddit?0:500);
+      setTimeout(function(){
+        if(isGone())return;
+        showHoldUI();
+      },1200);
+      setTimeout(function(){
+        if(isGone())return;
+        showCopyFallback();
+      },5000);
+    }
+  };
+})();
+</script>
+</body>
+</html>
