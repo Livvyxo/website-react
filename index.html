@@ -30,6 +30,10 @@
         +'<p style="font-size:.85rem;color:#ffffff99;margin-bottom:24px">For the best experience, tap continue to open this page in '+(isIOS?'Safari':'your browser')+'</p>'
         +'<button id="esc-btn" onclick="doEscape()" style="display:block;width:100%;padding:16px;background:#4ade80;color:#0a0a0a;font-family:Inter,-apple-system,sans-serif;font-size:15px;font-weight:700;border:none;border-radius:50px;cursor:pointer;letter-spacing:.02em;transition:transform 120ms;-webkit-tap-highlight-color:rgba(0,0,0,.1)">Continue</button>'
         +'<div id="esc-hold" style="display:none;margin-top:16px"><p style="font-size:13px;color:#ffffff80">&#9757; Hold the card for 3 seconds, then tap <strong>Open</strong></p></div>'
+        +'<div id="esc-copy" style="display:none;margin-top:16px">'
+        +'<p style="font-size:13px;color:#ffffff80;margin-bottom:12px">This browser blocks redirects. Copy the link and paste it in your browser:</p>'
+        +'<button id="copy-btn" onclick="doCopy()" style="display:block;width:100%;padding:14px;background:#ffffff20;color:#fff;font-family:Inter,-apple-system,sans-serif;font-size:14px;font-weight:600;border:1px solid #ffffff30;border-radius:50px;cursor:pointer">Copy link</button>'
+        +'</div>'
         +'<p style="font-size:.7rem;color:#ffffff40;margin-top:24px;letter-spacing:.5px">livdevries.com</p>'
         +'</div></div>';
 
@@ -52,13 +56,35 @@
         document.getElementById("esc-hold").style.display="block";
       }
 
+      function showCopyFallback(){
+        var btn=document.getElementById("esc-btn");
+        if(btn)btn.style.display="none";
+        document.getElementById("esc-copy").style.display="block";
+      }
+
+      window.doCopy=function(){
+        if(navigator.clipboard){
+          navigator.clipboard.writeText(dest).then(function(){
+            document.getElementById("copy-btn").textContent="Copied! ✓";
+            setTimeout(function(){document.getElementById("copy-btn").textContent="Copy link"},2000);
+          });
+        }else{
+          // Fallback for older webviews
+          var t=document.createElement("textarea");
+          t.value=dest;t.style.position="fixed";t.style.opacity="0";
+          document.body.appendChild(t);t.focus();t.select();
+          document.execCommand("copy");t.remove();
+          document.getElementById("copy-btn").textContent="Copied! ✓";
+          setTimeout(function(){document.getElementById("copy-btn").textContent="Copy link"},2000);
+        }
+      };
+
       window.doEscape=function(){
         if(isAndroid){
           try{
-            // Simple intent format — opens in user's DEFAULT browser, not just Chrome
             window.location.href="intent:"+dest+"#Intent;end";
           }catch(e){}
-          // Fallback after short delay if intent didn't work
+          // Fallback: try Chrome-specific intent
           setTimeout(function(){
             if(document.hidden)return;
             try{
@@ -66,8 +92,13 @@
               window.location.href="intent://"+u.host+u.pathname+u.search
                 +"#Intent;scheme="+u.protocol.replace(":","")
                 +";S.browser_fallback_url="+encodeURIComponent(dest)+";end";
-            }catch(e2){window.location.href=dest}
+            }catch(e2){}
           },500);
+          // If nothing worked after 1.5s, show copy fallback
+          setTimeout(function(){
+            if(document.hidden)return;
+            showCopyFallback();
+          },1500);
           return;
         }
         if(isIOS){
